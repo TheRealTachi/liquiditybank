@@ -1,0 +1,42 @@
+[toolchain]
+anchor_version = "0.31.1"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.localnet]
+liquiditybank = "LiqsdMHNBjXJt5XHjRq7f4H8tDwcBu4yj2cuUv6MNYi"
+
+[programs.mainnet]
+liquiditybank = "LiqARcPPdkvPhjasWYVHtKMY6nDsz1C3ANY9HdcRG5W"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "localnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "./tests/node_modules/.bin/ts-mocha -p ./tests/tsconfig.json -t 1000000 ./tests/liquiditybank.ts"
+
+[test]
+startup_wait = 5000
+shutdown_wait = 2000
+upgradeable = false
+
+[test.validator]
+bind_address = "127.0.0.1"
+url = "https://api.mainnet-beta.solana.com"
+ledger = ".anchor/test-ledger"
+rpc_port = 8899
+
+[[test.validator.clone]]
+address = "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+
+[[test.validator.clone]]
+address = "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+
+[[test.validator.clone]]
+address = "pfeeUxB6jkeY1Hxd7CsFCAjcbHA9rWtchMGdZ6VojVZ"

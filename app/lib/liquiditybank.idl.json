@@ -1,0 +1,1079 @@
+{
+  "address": "LiqARcPPdkvPhjasWYVHtKMY6nDsz1C3ANY9HdcRG5W",
+  "metadata": {
+    "name": "liquiditybank",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Self-deepening permanent liquidity for pump.fun launches"
+  },
+  "instructions": [
+    {
+      "name": "admin_collect_revenue",
+      "docs": [
+        "Pulls protocol launch-fee revenue out to the admin's destination.",
+        "Only callable by the admin recorded in protocol_config. Does NOT touch",
+        "any launch's fee_owner vault."
+      ],
+      "discriminator": [
+        137,
+        121,
+        187,
+        131,
+        86,
+        195,
+        12,
+        46
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "docs": [
+            "Must match `protocol_config.admin` — enforced by `has_one`."
+          ],
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "protocol_config"
+          ]
+        },
+        {
+          "name": "protocol_config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  116,
+                  111,
+                  99,
+                  111,
+                  108,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "protocol_revenue",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  116,
+                  111,
+                  99,
+                  111,
+                  108,
+                  45,
+                  114,
+                  101,
+                  118,
+                  101,
+                  110,
+                  117,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "destination",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "lamports",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "burn_from_curve",
+      "discriminator": [
+        229,
+        27,
+        147,
+        15,
+        147,
+        12,
+        252,
+        210
+      ],
+      "accounts": [
+        {
+          "name": "cranker",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "mint",
+          "docs": [
+            "Token mint — writable because SPL Burn decrements `mint.supply`."
+          ],
+          "writable": true,
+          "relations": [
+            "launch_config"
+          ]
+        },
+        {
+          "name": "launch_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  97,
+                  117,
+                  110,
+                  99,
+                  104,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "fee_owner",
+          "docs": [
+            "Per-launch authority PDA. Signs the wrap, the router CPI, the SPL",
+            "burn from its own token ATA, and the crank-reward payout."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  101,
+                  101,
+                  45,
+                  111,
+                  119,
+                  110,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "fee_owner_token_ata",
+          "docs": [
+            "fee_owner's base-token ATA. Tokens land here from the swap, then are",
+            "burned via SPL Token's Burn ix (mint.supply decreases)."
+          ],
+          "writable": true
+        },
+        {
+          "name": "fee_owner_wsol_ata",
+          "docs": [
+            "fee_owner's WSOL ATA. Pre-created by the cranker before this call.",
+            "Receives wrapped SOL pre-swap; drained by the router CPI."
+          ],
+          "writable": true
+        },
+        {
+          "name": "quote_mint",
+          "address": "So11111111111111111111111111111111111111112"
+        },
+        {
+          "name": "router_program",
+          "docs": [
+            "The external router program (Jupiter v6, PumpSwap router, etc.).",
+            "is responsible for its own validation. We only sign for fee_owner."
+          ]
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "router_data",
+          "type": "bytes"
+        },
+        {
+          "name": "router_account_flags",
+          "type": "bytes"
+        },
+        {
+          "name": "min_tokens_out",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "collect_amm_fees",
+      "discriminator": [
+        47,
+        25,
+        253,
+        86,
+        11,
+        21,
+        83,
+        159
+      ],
+      "accounts": [
+        {
+          "name": "cranker",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "mint",
+          "relations": [
+            "launch_config"
+          ]
+        },
+        {
+          "name": "launch_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  97,
+                  117,
+                  110,
+                  99,
+                  104,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "quote_mint",
+          "address": "So11111111111111111111111111111111111111112"
+        },
+        {
+          "name": "quote_token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "fee_owner",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  101,
+                  101,
+                  45,
+                  111,
+                  119,
+                  110,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "coin_creator_vault_authority"
+        },
+        {
+          "name": "coin_creator_vault_ata",
+          "writable": true
+        },
+        {
+          "name": "fee_owner_wsol_ata",
+          "writable": true
+        },
+        {
+          "name": "pump_amm_event_authority"
+        },
+        {
+          "name": "pump_amm_program",
+          "address": "pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "collect_curve_fees",
+      "discriminator": [
+        79,
+        236,
+        227,
+        159,
+        186,
+        91,
+        47,
+        9
+      ],
+      "accounts": [
+        {
+          "name": "cranker",
+          "docs": [
+            "The cranker — receives the crank reward."
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "mint",
+          "relations": [
+            "launch_config"
+          ]
+        },
+        {
+          "name": "launch_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  97,
+                  117,
+                  110,
+                  99,
+                  104,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "fee_owner",
+          "docs": [
+            "Per-launch authority. Will SIGN the pump.fun CPI as the creator."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  101,
+                  101,
+                  45,
+                  111,
+                  119,
+                  110,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "creator_vault",
+          "docs": [
+            "Pump.fun's creator-vault PDA for our fee_owner."
+          ],
+          "writable": true
+        },
+        {
+          "name": "pump_event_authority"
+        },
+        {
+          "name": "pump_program",
+          "address": "6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "grow_lp",
+      "discriminator": [
+        179,
+        47,
+        183,
+        160,
+        233,
+        36,
+        82,
+        3
+      ],
+      "accounts": [
+        {
+          "name": "cranker",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "mint",
+          "relations": [
+            "launch_config"
+          ]
+        },
+        {
+          "name": "launch_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  97,
+                  117,
+                  110,
+                  99,
+                  104,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "fee_owner",
+          "docs": [
+            "Per-launch authority PDA. Signs the swap, the deposit, the LP burn,",
+            "and the crank-reward payout."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  101,
+                  101,
+                  45,
+                  111,
+                  119,
+                  110,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "fee_owner_token_ata",
+          "docs": [
+            "fee_owner's base-token ATA. Receives tokens from the swap, drained",
+            "to the pool by the deposit."
+          ],
+          "writable": true
+        },
+        {
+          "name": "fee_owner_wsol_ata",
+          "docs": [
+            "fee_owner's WSOL ATA. Source of WSOL for both the swap and the",
+            "deposit-quote leg. Caller is responsible for wrapping bare SOL into",
+            "this ATA before invoking (e.g., a SystemProgram transfer +",
+            "sync_native in the same tx or a prior tx)."
+          ],
+          "writable": true
+        },
+        {
+          "name": "fee_owner_lp_ata",
+          "docs": [
+            "fee_owner's LP-token ATA. Receives LP shares from the deposit, then",
+            "burned via SPL Token Burn (decrements lp_mint.supply)."
+          ],
+          "writable": true
+        },
+        {
+          "name": "lp_mint",
+          "docs": [
+            "LP token mint. Writable because SPL Burn decrements supply."
+          ],
+          "writable": true
+        },
+        {
+          "name": "swap_router_program",
+          "docs": [
+            "Router program used for the swap step (typically Jupiter v6)."
+          ]
+        },
+        {
+          "name": "deposit_router_program",
+          "docs": [
+            "Router program used for the deposit step (typically PumpSwap AMM)."
+          ]
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "swap_data",
+          "type": "bytes"
+        },
+        {
+          "name": "swap_account_flags",
+          "type": "bytes"
+        },
+        {
+          "name": "deposit_data",
+          "type": "bytes"
+        },
+        {
+          "name": "deposit_account_flags",
+          "type": "bytes"
+        },
+        {
+          "name": "min_tokens_out_from_swap",
+          "type": "u64"
+        },
+        {
+          "name": "min_lp_out",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "initialize_protocol",
+      "discriminator": [
+        188,
+        233,
+        252,
+        106,
+        134,
+        146,
+        202,
+        91
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "protocol_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  116,
+                  111,
+                  99,
+                  111,
+                  108,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "protocol_revenue",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  116,
+                  111,
+                  99,
+                  111,
+                  108,
+                  45,
+                  114,
+                  101,
+                  118,
+                  101,
+                  110,
+                  117,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "register_launch",
+      "discriminator": [
+        114,
+        114,
+        67,
+        23,
+        41,
+        70,
+        0,
+        225
+      ],
+      "accounts": [
+        {
+          "name": "registrant",
+          "docs": [
+            "The wallet paying the launch fee. Has no on-chain authority post-registration."
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "mint",
+          "docs": [
+            "The pump.fun token mint. Must already be created on pump.fun with",
+            "`fee_owner` (derived below) as the creator role. The frontend handles",
+            "the pump.fun create tx separately before calling this instruction."
+          ]
+        },
+        {
+          "name": "fee_owner",
+          "docs": [
+            "Per-launch authority PDA. Will be the pump.fun creator and the",
+            "SOL/WSOL custodian for this launch."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  101,
+                  101,
+                  45,
+                  111,
+                  119,
+                  110,
+                  101,
+                  114
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "launch_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  97,
+                  117,
+                  110,
+                  99,
+                  104,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "protocol_config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  116,
+                  111,
+                  99,
+                  111,
+                  108,
+                  45,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "protocol_revenue",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  116,
+                  111,
+                  99,
+                  111,
+                  108,
+                  45,
+                  114,
+                  101,
+                  118,
+                  101,
+                  110,
+                  117,
+                  101
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "LaunchConfig",
+      "discriminator": [
+        18,
+        161,
+        9,
+        224,
+        102,
+        145,
+        29,
+        94
+      ]
+    },
+    {
+      "name": "ProtocolConfig",
+      "discriminator": [
+        207,
+        91,
+        250,
+        28,
+        152,
+        179,
+        215,
+        209
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "LaunchFeeUnpaid",
+      "msg": "Launch fee not paid in full."
+    },
+    {
+      "code": 6001,
+      "name": "MintNotInitialized",
+      "msg": "Mint must already exist on pump.fun before registering."
+    },
+    {
+      "code": 6002,
+      "name": "NotCreator",
+      "msg": "Fee owner PDA is not set as the creator of this mint."
+    },
+    {
+      "code": 6003,
+      "name": "BelowCrankThreshold",
+      "msg": "Crank threshold not yet reached."
+    },
+    {
+      "code": 6004,
+      "name": "SlippageExceeded",
+      "msg": "Slippage tolerance exceeded."
+    },
+    {
+      "code": 6005,
+      "name": "InvalidPumpAccount",
+      "msg": "Invalid pump.fun or PumpSwap account passed."
+    },
+    {
+      "code": 6006,
+      "name": "MathOverflow",
+      "msg": "Math overflow."
+    },
+    {
+      "code": 6007,
+      "name": "TriggerNotMet",
+      "msg": "Trigger condition not yet met."
+    },
+    {
+      "code": 6008,
+      "name": "AlreadyFulfilled",
+      "msg": "Promise already fulfilled."
+    },
+    {
+      "code": 6009,
+      "name": "NotDev",
+      "msg": "Caller is not the dev payout wallet."
+    },
+    {
+      "code": 6010,
+      "name": "NothingVested",
+      "msg": "Nothing vested yet."
+    },
+    {
+      "code": 6011,
+      "name": "TokenProgramMismatch",
+      "msg": "Token program mismatch."
+    }
+  ],
+  "types": [
+    {
+      "name": "LaunchConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "mint",
+            "docs": [
+              "The pump.fun token mint this launch wraps."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "registrant",
+            "docs": [
+              "The wallet that paid the LAUNCH_FEE_LAMPORTS on registration. Recorded",
+              "for telemetry only — has no on-chain authority."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "Bump for the LaunchConfig PDA."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "fee_owner_bump",
+            "docs": [
+              "Bump for the per-launch fee_owner PDA (the pump.fun creator)."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "cumulative_fees_collected",
+            "docs": [
+              "Cumulative SOL pulled into fee_owner across this launch's life",
+              "(curve fees + amm fees, summed across all crank cycles)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "cumulative_lp_sol_added",
+            "docs": [
+              "Cumulative SOL spent on the LP-add cycle (buy half + pair)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "cumulative_lp_burned",
+            "docs": [
+              "Cumulative LP tokens minted and burned via the crank."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "cumulative_curve_sol_spent",
+            "docs": [
+              "Cumulative SOL spent on pre-bond buy-and-burn cycles."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "cumulative_tokens_burned",
+            "docs": [
+              "Cumulative tokens burned via pre-bond buy-and-burn."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "crank_count",
+            "docs": [
+              "Number of times the grow_lp crank has fired."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "curve_burn_count",
+            "docs": [
+              "Number of times the burn_from_curve crank has fired."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "created_at",
+            "docs": [
+              "Unix timestamp of registration."
+            ],
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProtocolConfig",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "paused",
+            "type": "bool"
+          },
+          {
+            "name": "total_launches",
+            "type": "u64"
+          },
+          {
+            "name": "total_revenue_lamports",
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ]
+}

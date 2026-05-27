@@ -1,0 +1,50 @@
+# ---------------------------------------------------------------------------
+# Secrets — these MUST NEVER be committed to a public repo.
+# ---------------------------------------------------------------------------
+# Vanity keypairs (program-ID + cranker keys with real mainnet funds)
+/vanity/
+*.keypair.json
+
+# Env files with API keys / JWTs / RPC creds
+.env
+.env.local
+.env.*.local
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Custodial launch session keypairs (ephemeral but real)
+.liquiditybank-sessions/
+
+# ---------------------------------------------------------------------------
+# Build artifacts
+# ---------------------------------------------------------------------------
+# Rust / Anchor
+target/
+**/*.rs.bk
+
+# Anchor local validator state (contains validator/faucet keypairs)
+.anchor/
+
+# Node
+node_modules/
+.next/
+out/
+dist/
+*.tsbuildinfo
+
+# Pinned dependency lockfiles — keep these tracked
+!Cargo.lock
+!package-lock.json
+
+# Frontend uploads (local-dev only; production uses IPFS)
+app/public/uploads/
+
+# ---------------------------------------------------------------------------
+# OS / editor
+# ---------------------------------------------------------------------------
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*~

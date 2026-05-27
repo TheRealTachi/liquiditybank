@@ -1,0 +1,22 @@
+{
+  "name": "liquiditybank-keeper",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx index.ts",
+    "init-protocol": "tsx scripts/init-protocol.ts"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.31.1",
+    "@solana/spl-token": "^0.4.6",
+    "@solana/web3.js": "^1.95.0",
+    "bs58": "^6.0.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.4"
+  }
+}
