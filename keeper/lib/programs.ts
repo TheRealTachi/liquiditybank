@@ -81,3 +81,49 @@ export function pumpCreatorVaultPda(creator: PublicKey): [PublicKey, number] {
     PUMP_PROGRAM_ID
   );
 }
+
+export function pumpGlobalPda(): [PublicKey, number] {
+  return PublicKey.findProgramAddressSync(
+    [Buffer.from("global")],
+    PUMP_PROGRAM_ID
+  );
+}
+
+export function pumpBondingCurvePda(mint: PublicKey): [PublicKey, number] {
+  return PublicKey.findProgramAddressSync(
+    [Buffer.from("bonding-curve"), mint.toBuffer()],
+    PUMP_PROGRAM_ID
+  );
+}
+
+export function pumpGlobalVolumeAccumulatorPda(): [PublicKey, number] {
+  return PublicKey.findProgramAddressSync(
+    [Buffer.from("global_volume_accumulator")],
+    PUMP_PROGRAM_ID
+  );
+}
+
+export function pumpUserVolumeAccumulatorPda(
+  user: PublicKey
+): [PublicKey, number] {
+  return PublicKey.findProgramAddressSync(
+    [Buffer.from("user_volume_accumulator"), user.toBuffer()],
+    PUMP_PROGRAM_ID
+  );
+}
+
+export function pumpFeeConfigPda(): [PublicKey, number] {
+  return PublicKey.findProgramAddressSync(
+    [Buffer.from("fee_config"), PUMP_PROGRAM_ID.toBuffer()],
+    PUMP_FEES_PROGRAM_ID
+  );
+}
+
+export function pumpAmmCreatorVaultAuthorityPda(
+  coinCreator: PublicKey
+): [PublicKey, number] {
+  return PublicKey.findProgramAddressSync(
+    [Buffer.from("creator_vault"), coinCreator.toBuffer()],
+    PUMP_AMM_PROGRAM_ID
+  );
+}
