@@ -49,7 +49,10 @@ use crate::state::LaunchConfig;
 
 #[derive(Accounts)]
 pub struct GrowLp<'info> {
-    #[account(mut)]
+    /// Must be the protocol keeper. This crank signs as `fee_owner` and forwards
+    /// caller-controlled router data, so it cannot be permissionless without
+    /// handing anyone the ability to drain the vault via slippage.
+    #[account(mut, address = KEEPER_AUTHORITY @ LiquidityBankError::UnauthorizedKeeper)]
     pub cranker: Signer<'info>,
 
     pub mint: InterfaceAccount<'info, Mint>,
@@ -124,6 +127,19 @@ pub fn grow_lp<'info>(
     let signer_seeds: &[&[&[u8]]] =
         &[&[b"fee-owner", mint_key.as_ref(), &[fee_owner_bump]]];
     let fee_owner_key = ctx.accounts.fee_owner.key();
+
+    // ------------------------------------------------------------------
+    // Both routers must be on the allowlist. Each CPI below runs with
+    // fee_owner's signature; an arbitrary program could transfer funds out.
+    // ------------------------------------------------------------------
+    require!(
+        ALLOWED_ROUTER_PROGRAMS.contains(&ctx.accounts.swap_router_program.key()),
+        LiquidityBankError::DisallowedRouter
+    );
+    require!(
+        ALLOWED_ROUTER_PROGRAMS.contains(&ctx.accounts.deposit_router_program.key()),
+        LiquidityBankError::DisallowedRouter
+    );
 
     // ------------------------------------------------------------------
     // Validate WSOL ATA derivation.
