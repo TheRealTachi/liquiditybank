@@ -26,4 +26,8 @@ pub enum LiquidityBankError {
     NothingVested,
     #[msg("Token program mismatch.")]
     TokenProgramMismatch,
+    #[msg("Caller is not the authorized keeper.")]
+    UnauthorizedKeeper,
+    #[msg("Router program is not on the allowlist.")]
+    DisallowedRouter,
 }

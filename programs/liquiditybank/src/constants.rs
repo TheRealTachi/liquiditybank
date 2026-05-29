@@ -9,6 +9,17 @@ pub const PUMP_PROGRAM_ID: Pubkey = pubkey!("6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M
 pub const PUMP_AMM_PROGRAM_ID: Pubkey = pubkey!("pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA");
 pub const PUMP_FEES_PROGRAM_ID: Pubkey = pubkey!("pfeeUxB6jkeY1Hxd7CsFCAjcbHA9rWtchMGdZ6VojVZ");
 
+/// Programs that the fund-spending router CPIs (`burn_from_curve`, `grow_lp`)
+/// are permitted to invoke. The router instructions hand the `fee_owner` PDA's
+/// signature to whatever program is passed; without this allowlist an attacker
+/// could pass their own program and drain the vault. Restricting to pump.fun's
+/// bonding curve and the PumpSwap AMM — both immutable, trusted programs that
+/// only ever return assets to `fee_owner` — bounds the blast radius even if the
+/// keeper key is ever compromised. Add a program here (and upgrade) to support
+/// a new venue.
+pub const ALLOWED_ROUTER_PROGRAMS: [Pubkey; 2] =
+    [PUMP_PROGRAM_ID, PUMP_AMM_PROGRAM_ID];
+
 pub const TOKEN_PROGRAM_ID: Pubkey = pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
 pub const TOKEN_2022_PROGRAM_ID: Pubkey = pubkey!("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb");
 pub const ASSOCIATED_TOKEN_PROGRAM_ID: Pubkey =
@@ -55,6 +66,17 @@ pub const SPL_TOKEN_SYNC_NATIVE_IX: u8 = 17;
 // Liquidity Bank protocol parameters
 // ============================================================================
 pub const BPS_DENOMINATOR: u64 = 10_000;
+
+/// The sole wallet authorized to fire the fund-spending cranks
+/// (`burn_from_curve`, `grow_lp`). These instructions sign as the per-launch
+/// `fee_owner` PDA and forward caller-supplied instruction data to a router, so
+/// the caller fully controls slippage/min-out; leaving them permissionless lets
+/// anyone route a vault's SOL through a pool they control and extract it. Gating
+/// to the protocol keeper closes that path. Fee-*collection* cranks
+/// (`collect_curve_fees`, `collect_amm_fees`) stay permissionless — they only
+/// move fees INTO `fee_owner` via hardcoded pump CPIs. Rotate via program upgrade.
+pub const KEEPER_AUTHORITY: Pubkey =
+    pubkey!("LiqwZ2BKDF74nukVJATE17Bk9TJMzAcuKEEMQ4fp3r4");
 
 /// Minimum SOL accumulated in the fee_owner PDA before the crank may fire.
 /// Prevents wasting tx fees on dust adds. 0.5 SOL.

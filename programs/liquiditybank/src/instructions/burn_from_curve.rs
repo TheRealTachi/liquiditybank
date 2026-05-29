@@ -41,7 +41,10 @@ use crate::state::LaunchConfig;
 
 #[derive(Accounts)]
 pub struct BurnFromCurve<'info> {
-    #[account(mut)]
+    /// Must be the protocol keeper. This crank signs as `fee_owner` and forwards
+    /// caller-controlled router data, so it cannot be permissionless without
+    /// handing anyone the ability to drain the vault via slippage.
+    #[account(mut, address = KEEPER_AUTHORITY @ LiquidityBankError::UnauthorizedKeeper)]
     pub cranker: Signer<'info>,
 
     /// Token mint — writable because SPL Burn decrements `mint.supply`.
@@ -103,6 +106,15 @@ pub fn burn_from_curve<'info>(
     let fee_owner_bump = ctx.accounts.launch_config.fee_owner_bump;
     let signer_seeds: &[&[&[u8]]] =
         &[&[b"fee-owner", mint_key.as_ref(), &[fee_owner_bump]]];
+
+    // ------------------------------------------------------------------
+    // Router must be on the allowlist. The CPI below runs with fee_owner's
+    // signature; an arbitrary program could simply transfer the WSOL out.
+    // ------------------------------------------------------------------
+    require!(
+        ALLOWED_ROUTER_PROGRAMS.contains(&ctx.accounts.router_program.key()),
+        LiquidityBankError::DisallowedRouter
+    );
 
     // ------------------------------------------------------------------
     // Validate WSOL ATA derivation.

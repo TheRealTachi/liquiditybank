@@ -123,8 +123,14 @@
       "accounts": [
         {
           "name": "cranker",
+          "docs": [
+            "Must be the protocol keeper. This crank signs as `fee_owner` and forwards",
+            "caller-controlled router data, so it cannot be permissionless without",
+            "handing anyone the ability to drain the vault via slippage."
+          ],
           "writable": true,
-          "signer": true
+          "signer": true,
+          "address": "LiqwZ2BKDF74nukVJATE17Bk9TJMzAcuKEEMQ4fp3r4"
         },
         {
           "name": "mint",
@@ -477,8 +483,14 @@
       "accounts": [
         {
           "name": "cranker",
+          "docs": [
+            "Must be the protocol keeper. This crank signs as `fee_owner` and forwards",
+            "caller-controlled router data, so it cannot be permissionless without",
+            "handing anyone the ability to drain the vault via slippage."
+          ],
           "writable": true,
-          "signer": true
+          "signer": true,
+          "address": "LiqwZ2BKDF74nukVJATE17Bk9TJMzAcuKEEMQ4fp3r4"
         },
         {
           "name": "mint",
@@ -950,6 +962,16 @@
       "code": 6011,
       "name": "TokenProgramMismatch",
       "msg": "Token program mismatch."
+    },
+    {
+      "code": 6012,
+      "name": "UnauthorizedKeeper",
+      "msg": "Caller is not the authorized keeper."
+    },
+    {
+      "code": 6013,
+      "name": "DisallowedRouter",
+      "msg": "Router program is not on the allowlist."
     }
   ],
   "types": [
